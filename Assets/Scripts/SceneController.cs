@@ -4,13 +4,19 @@ using UnityEngine;
 
 public class SceneController : MonoBehaviour
 {
-    [SerializeField] MemoryCard originalCard = default;
-    [SerializeField] Sprite[] images = default;
+    [SerializeField] MemoryCard originalCard;
+    [SerializeField] Sprite[] images;
+
+    MemoryCard _firstRevealed;
+    MemoryCard _secondRevealed;
 
     public const int gridRows = 2;
     public const int gridCols = 4;
     public const float ofsetX = 10f;
     public const float ofsetY = -10f;
+    int _score;
+    
+    public bool CanReveal => _secondRevealed == null;
 
     // Start is called before the first frame update
     void Start()
@@ -50,9 +56,30 @@ public class SceneController : MonoBehaviour
         }
         return numClones;
     }
-    // Update is called once per frame
-    void Update()
+    public void CardRevealed(MemoryCard card)
     {
-        
+        if (_firstRevealed == null) _firstRevealed = card;
+        else
+        {
+            _secondRevealed = card;
+            StartCoroutine(CheckMatch());
+        }
+    }
+
+    private IEnumerator CheckMatch()
+    {
+        if(_firstRevealed.Id == _secondRevealed.Id)
+        {
+            _score++;
+            Debug.Log($"Счёт: {_score}");
+        }
+        else
+        {
+            yield return new WaitForSeconds(.5f);
+            _firstRevealed.Unreveal();
+            _secondRevealed.Unreveal();
+        }
+        _firstRevealed = null;
+        _secondRevealed = null;
     }
 }
